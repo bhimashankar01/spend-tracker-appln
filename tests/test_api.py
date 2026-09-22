@@ -175,7 +175,7 @@ def test_invalid_long_password(
     client,
 ):
 
-    long_password = "a" * 73
+    long_password = "a" * 129
 
     response = client.post(
         "/auth/register",

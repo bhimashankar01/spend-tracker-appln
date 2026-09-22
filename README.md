@@ -28,6 +28,9 @@ pip install -r requirements.txt
 Start the API:
 uvicorn app.main:app --reload
 
+Test Runs:
+python -m pytest
+
 Open:
 http://127.0.0.1:8000
 
