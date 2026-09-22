@@ -1,0 +1,1989 @@
+
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  >
+
+  <title>Spend Tracker</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family:
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+
+      background: #f5f7fb;
+      color: #1f2937;
+
+      margin: 0;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin-top: 0;
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 20px;
+
+      box-shadow:
+        0 2px 10px rgba(0, 0, 0, 0.06);
+    }
+
+    /* ---------------------------------------
+       AUTH
+    --------------------------------------- */
+
+    #auth-section {
+      max-width: 420px;
+      margin: 60px auto;
+    }
+
+    .auth-tabs {
+      display: flex;
+      margin-bottom: 20px;
+
+      border-bottom: 1px solid #ddd;
+    }
+
+    .auth-tab {
+      flex: 1;
+
+      border: none;
+      background: transparent;
+
+      padding: 12px;
+
+      cursor: pointer;
+
+      font-weight: 600;
+
+      color: #6b7280;
+    }
+
+    .auth-tab.active {
+      color: #2563eb;
+
+      border-bottom:
+        2px solid #2563eb;
+    }
+
+    .auth-form {
+      display: none;
+    }
+
+    .auth-form.active {
+      display: block;
+    }
+
+    /* ---------------------------------------
+       FORMS
+    --------------------------------------- */
+
+    form {
+      display: grid;
+      gap: 12px;
+    }
+
+    label {
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+
+      padding: 11px 12px;
+
+      border:
+        1px solid #d1d5db;
+
+      border-radius: 8px;
+
+      font: inherit;
+
+      background: white;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      outline: none;
+
+      border-color: #2563eb;
+
+      box-shadow:
+        0 0 0 2px
+        rgba(37, 99, 235, 0.1);
+    }
+
+    button {
+      padding: 11px 16px;
+
+      border: none;
+
+      border-radius: 8px;
+
+      background: #2563eb;
+
+      color: white;
+
+      font: inherit;
+
+      font-weight: 600;
+
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    button.secondary {
+      background: #6b7280;
+    }
+
+    button.secondary:hover {
+      background: #4b5563;
+    }
+
+    button.danger {
+      background: #dc2626;
+    }
+
+    button.danger:hover {
+      background: #b91c1c;
+    }
+
+    /* ---------------------------------------
+       HEADER
+    --------------------------------------- */
+
+    .header {
+      display: flex;
+
+      justify-content: space-between;
+
+      align-items: center;
+
+      gap: 20px;
+    }
+
+    .user-info {
+      color: #6b7280;
+      font-size: 14px;
+    }
+
+    /* ---------------------------------------
+       SUMMARY
+    --------------------------------------- */
+
+    .summary-grid {
+      display: grid;
+
+      grid-template-columns:
+        repeat(2, 1fr);
+
+      gap: 16px;
+    }
+
+    .summary-box {
+      padding: 20px;
+
+      border-radius: 10px;
+
+      background: #f8fafc;
+    }
+
+    .summary-label {
+      color: #6b7280;
+
+      font-size: 14px;
+
+      margin-bottom: 8px;
+    }
+
+    .summary-value {
+      font-size: 28px;
+
+      font-weight: 700;
+    }
+
+    /* ---------------------------------------
+       EXPENSES
+    --------------------------------------- */
+
+    .expense-item {
+      display: flex;
+
+      justify-content: space-between;
+
+      align-items: center;
+
+      gap: 20px;
+
+      padding: 14px 0;
+
+      border-bottom:
+        1px solid #e5e7eb;
+    }
+
+    .expense-item:last-child {
+      border-bottom: none;
+    }
+
+    .expense-category {
+      font-weight: 600;
+    }
+
+    .expense-note {
+      color: #6b7280;
+
+      font-size: 14px;
+
+      margin-top: 4px;
+    }
+
+    .expense-date {
+      color: #6b7280;
+
+      font-size: 13px;
+    }
+
+    .expense-amount {
+      font-weight: 700;
+
+      white-space: nowrap;
+    }
+
+    /* ---------------------------------------
+       CATEGORY
+    --------------------------------------- */
+
+    .category-item {
+      display: flex;
+
+      justify-content: space-between;
+
+      padding: 10px 0;
+
+      border-bottom:
+        1px solid #e5e7eb;
+    }
+
+    /* ---------------------------------------
+       MESSAGES
+    --------------------------------------- */
+
+    .message {
+      padding: 12px;
+
+      border-radius: 8px;
+
+      margin-bottom: 16px;
+
+      display: none;
+    }
+
+    .message.success {
+      display: block;
+
+      background: #dcfce7;
+
+      color: #166534;
+    }
+
+    .message.error {
+      display: block;
+
+      background: #fee2e2;
+
+      color: #991b1b;
+    }
+
+    /* ---------------------------------------
+       LOADING
+    --------------------------------------- */
+
+    .loading {
+      opacity: 0.6;
+
+      pointer-events: none;
+    }
+
+    /* ---------------------------------------
+       RESPONSIVE
+    --------------------------------------- */
+
+    @media (max-width: 650px) {
+
+      body {
+        padding: 20px 12px;
+      }
+
+      .summary-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .header {
+        flex-direction: column;
+
+        align-items: flex-start;
+      }
+
+      .expense-item {
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+
+
+<body>
+
+<div class="container">
+
+  <!-- =====================================
+       AUTH SECTION
+  ====================================== -->
+
+  <section id="auth-section">
+
+    <div class="card">
+
+      <h1>
+        Spend Tracker
+      </h1>
+
+      <p>
+        Track your expenses securely.
+      </p>
+
+
+      <!-- Tabs -->
+
+      <div class="auth-tabs">
+
+        <button
+          id="login-tab"
+          class="auth-tab active"
+          type="button"
+        >
+          Login
+        </button>
+
+        <button
+          id="register-tab"
+          class="auth-tab"
+          type="button"
+        >
+          Register
+        </button>
+
+      </div>
+
+
+      <!-- Message -->
+
+      <div
+        id="auth-message"
+        class="message"
+      ></div>
+
+
+      <!-- =================================
+           LOGIN FORM
+      ================================== -->
+
+      <form
+        id="login-form"
+        class="auth-form active"
+      >
+
+        <div>
+
+          <label for="login-username">
+            Username
+          </label>
+
+          <input
+            id="login-username"
+            type="text"
+            autocomplete="username"
+            minlength="3"
+            required
+          >
+
+        </div>
+
+
+        <div>
+
+          <label for="login-password">
+            Password
+          </label>
+
+          <input
+            id="login-password"
+            type="password"
+            autocomplete="current-password"
+            required
+          >
+
+        </div>
+
+
+        <button
+          id="login-button"
+          type="submit"
+        >
+          Login
+        </button>
+
+      </form>
+
+
+      <!-- =================================
+           REGISTER FORM
+      ================================== -->
+
+      <form
+        id="register-form"
+        class="auth-form"
+      >
+
+        <div>
+
+          <label for="register-username">
+            Username
+          </label>
+
+          <input
+            id="register-username"
+            type="text"
+            autocomplete="username"
+            minlength="3"
+            maxlength="100"
+            required
+          >
+
+        </div>
+
+
+        <div>
+
+          <label for="register-password">
+            Password
+          </label>
+
+          <input
+            id="register-password"
+            type="password"
+            autocomplete="new-password"
+            minlength="8"
+            required
+          >
+
+          <small>
+            Minimum 8 characters.
+          </small>
+
+        </div>
+
+
+        <div>
+
+          <label for="register-confirm-password">
+            Confirm password
+          </label>
+
+          <input
+            id="register-confirm-password"
+            type="password"
+            autocomplete="new-password"
+            minlength="8"
+            required
+          >
+
+        </div>
+
+
+        <button
+          id="register-button"
+          type="submit"
+        >
+          Create account
+        </button>
+
+      </form>
+
+    </div>
+
+  </section>
+
+
+  <!-- =====================================
+       APPLICATION
+  ====================================== -->
+
+  <section
+    id="app-section"
+    style="display: none;"
+  >
+
+
+    <!-- HEADER -->
+
+    <div class="card">
+
+      <div class="header">
+
+        <div>
+
+          <h1>
+            Spend Tracker
+          </h1>
+
+          <div class="user-info">
+
+            Logged in as
+
+            <strong
+              id="current-username"
+            ></strong>
+
+          </div>
+
+        </div>
+
+
+        <button
+          id="logout-button"
+          class="danger"
+          type="button"
+        >
+          Logout
+        </button>
+
+      </div>
+
+    </div>
+
+
+    <!-- APP MESSAGE -->
+
+    <div
+      id="app-message"
+      class="message"
+    ></div>
+
+
+    <!-- =================================
+         SUMMARY
+    ================================== -->
+
+    <div class="card">
+
+      <h2>
+        Monthly Summary
+      </h2>
+
+      <div class="summary-grid">
+
+        <div class="summary-box">
+
+          <div class="summary-label">
+            Total spend
+          </div>
+
+          <div
+            id="total-spend"
+            class="summary-value"
+          >
+            ₹0.00
+          </div>
+
+        </div>
+
+
+        <div class="summary-box">
+
+          <div class="summary-label">
+            Month over month
+          </div>
+
+          <div
+            id="monthly-change"
+            class="summary-value"
+          >
+            N/A
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- =================================
+         ADD EXPENSE
+    ================================== -->
+
+    <div class="card">
+
+      <h2>
+        Add Expense
+      </h2>
+
+
+      <form id="expense-form">
+
+        <div>
+
+          <label for="amount">
+            Amount
+          </label>
+
+          <input
+            id="amount"
+            type="number"
+            min="0.01"
+            step="0.01"
+            placeholder="100.00"
+            required
+          >
+
+        </div>
+
+
+        <div>
+
+          <label for="category">
+            Category
+          </label>
+
+          <input
+            id="category"
+            type="text"
+            maxlength="100"
+            placeholder="Food"
+            required
+          >
+
+        </div>
+
+
+        <div>
+
+          <label for="note">
+            Note
+          </label>
+
+          <textarea
+            id="note"
+            rows="3"
+            maxlength="500"
+            placeholder="Lunch with friends"
+          ></textarea>
+
+        </div>
+
+
+        <div>
+
+          <label for="expense-date">
+            Date
+          </label>
+
+          <input
+            id="expense-date"
+            type="date"
+            required
+          >
+
+        </div>
+
+
+        <button type="submit">
+          Add Expense
+        </button>
+
+      </form>
+
+    </div>
+
+
+    <!-- =================================
+         CATEGORY SUMMARY
+    ================================== -->
+
+    <div class="card">
+
+      <h2>
+        Spend by Category
+      </h2>
+
+      <div id="category-list">
+        <p>
+          No spending yet.
+        </p>
+      </div>
+
+    </div>
+
+
+    <!-- =================================
+         EXPENSE LIST
+    ================================== -->
+
+    <div class="card">
+
+      <h2>
+        Your Expenses
+      </h2>
+
+      <div id="expense-list">
+
+        <p>
+          No expenses yet.
+        </p>
+
+      </div>
+
+    </div>
+
+  </section>
+
+</div>
+
+
+<script>
+
+  /*
+   * ======================================
+   * CONFIGURATION
+   * ======================================
+   */
+
+  const TOKEN_KEY =
+    "spend_tracker_access_token";
+
+
+  /*
+   * ======================================
+   * DOM ELEMENTS
+   * ======================================
+   */
+
+  const authSection =
+    document.getElementById(
+      "auth-section"
+    );
+
+  const appSection =
+    document.getElementById(
+      "app-section"
+    );
+
+
+  /*
+   * ======================================
+   * TOKEN HELPERS
+   * ======================================
+   */
+
+  function getToken() {
+
+    return localStorage.getItem(
+      TOKEN_KEY
+    );
+  }
+
+
+  function saveToken(token) {
+
+    localStorage.setItem(
+      TOKEN_KEY,
+      token
+    );
+  }
+
+
+  function removeToken() {
+
+    localStorage.removeItem(
+      TOKEN_KEY
+    );
+  }
+
+
+  /*
+   * ======================================
+   * MESSAGE HELPERS
+   * ======================================
+   */
+
+  function showMessage(
+    element,
+    message,
+    type = "success"
+  ) {
+
+    element.textContent =
+      message;
+
+    element.className =
+      `message ${type}`;
+  }
+
+
+  function clearMessage(element) {
+
+    element.textContent = "";
+
+    element.className =
+      "message";
+  }
+
+
+  /*
+   * ======================================
+   * AUTH TABS
+   * ======================================
+   */
+
+  const loginTab =
+    document.getElementById(
+      "login-tab"
+    );
+
+  const registerTab =
+    document.getElementById(
+      "register-tab"
+    );
+
+  const loginForm =
+    document.getElementById(
+      "login-form"
+    );
+
+  const registerForm =
+    document.getElementById(
+      "register-form"
+    );
+
+
+  loginTab.addEventListener(
+    "click",
+    () => {
+
+      loginTab.classList.add(
+        "active"
+      );
+
+      registerTab.classList.remove(
+        "active"
+      );
+
+      loginForm.classList.add(
+        "active"
+      );
+
+      registerForm.classList.remove(
+        "active"
+      );
+
+      clearMessage(
+        document.getElementById(
+          "auth-message"
+        )
+      );
+    }
+  );
+
+
+  registerTab.addEventListener(
+    "click",
+    () => {
+
+      registerTab.classList.add(
+        "active"
+      );
+
+      loginTab.classList.remove(
+        "active"
+      );
+
+      registerForm.classList.add(
+        "active"
+      );
+
+      loginForm.classList.remove(
+        "active"
+      );
+
+      clearMessage(
+        document.getElementById(
+          "auth-message"
+        )
+      );
+    }
+  );
+
+
+  /*
+   * ======================================
+   * API HELPER
+   * ======================================
+   */
+
+  async function api(
+    url,
+    options = {}
+  ) {
+
+    const token =
+      getToken();
+
+
+    const headers =
+      options.headers || {};
+
+
+    if (token) {
+
+      headers[
+        "Authorization"
+      ] =
+        `Bearer ${token}`;
+    }
+
+
+    options.headers =
+      headers;
+
+
+    const response =
+      await fetch(
+        url,
+        options
+      );
+
+
+    /*
+     * JWT expired/invalid
+     */
+
+    if (
+      response.status === 401
+    ) {
+
+      removeToken();
+
+      showLoginScreen();
+
+      throw new Error(
+        "Your session has expired. Please login again."
+      );
+    }
+
+
+    return response;
+  }
+
+
+  /*
+   * ======================================
+   * API ERROR HANDLER
+   * ======================================
+   */
+
+  async function getErrorMessage(
+    response
+  ) {
+
+    try {
+
+      const data =
+        await response.json();
+
+
+      if (
+        Array.isArray(
+          data.detail
+        )
+      ) {
+
+        return data.detail
+          .map(
+            item =>
+              item.msg
+          )
+          .join(", ");
+      }
+
+
+      return (
+        data.detail ||
+        "Something went wrong."
+      );
+
+    } catch {
+
+      return "Something went wrong.";
+    }
+  }
+
+
+  /*
+   * ======================================
+   * SHOW LOGIN SCREEN
+   * ======================================
+   */
+
+  function showLoginScreen() {
+
+    authSection.style.display =
+      "block";
+
+    appSection.style.display =
+      "none";
+  }
+
+
+  /*
+   * ======================================
+   * SHOW APP
+   * ======================================
+   */
+
+  function showAppScreen() {
+
+    authSection.style.display =
+      "none";
+
+    appSection.style.display =
+      "block";
+  }
+
+
+  /*
+   * ======================================
+   * REGISTER
+   * ======================================
+   */
+
+  registerForm.addEventListener(
+    "submit",
+    async (event) => {
+
+      event.preventDefault();
+
+
+      const message =
+        document.getElementById(
+          "auth-message"
+        );
+
+
+      clearMessage(message);
+
+
+      const username =
+        document.getElementById(
+          "register-username"
+        ).value
+        .trim();
+
+
+      const password =
+        document.getElementById(
+          "register-password"
+        ).value;
+
+
+      const confirmPassword =
+        document.getElementById(
+          "register-confirm-password"
+        ).value;
+
+
+      /*
+       * Password confirmation
+       */
+
+      if (
+        password !==
+        confirmPassword
+      ) {
+
+        showMessage(
+          message,
+          "Passwords do not match.",
+          "error"
+        );
+
+        return;
+      }
+
+
+      /*
+       * Frontend password length
+       */
+
+      if (
+        password.length < 8
+      ) {
+
+        showMessage(
+          message,
+          "Password must be at least 8 characters.",
+          "error"
+        );
+
+        return;
+      }
+
+
+      try {
+
+        const response =
+          await fetch(
+            "/auth/register",
+            {
+              method: "POST",
+
+              headers: {
+                "Content-Type":
+                  "application/json"
+              },
+
+              body:
+                JSON.stringify({
+                  username,
+                  password
+                })
+            }
+          );
+
+
+        if (
+          !response.ok
+        ) {
+
+          const error =
+            await getErrorMessage(
+              response
+            );
+
+          throw new Error(
+            error
+          );
+        }
+
+
+        const data =
+          await response.json();
+
+
+        /*
+         * Backend automatically
+         * logs the user in after
+         * registration.
+         */
+
+        saveToken(
+          data.access_token
+        );
+
+
+        await initializeApp();
+
+
+        showMessage(
+          document.getElementById(
+            "app-message"
+          ),
+          "Account created successfully.",
+          "success"
+        );
+
+
+      } catch (error) {
+
+        showMessage(
+          message,
+          error.message,
+          "error"
+        );
+      }
+    }
+  );
+
+
+  /*
+   * ======================================
+   * LOGIN
+   * ======================================
+   */
+
+  loginForm.addEventListener(
+    "submit",
+    async (event) => {
+
+      event.preventDefault();
+
+
+      const message =
+        document.getElementById(
+          "auth-message"
+        );
+
+
+      clearMessage(message);
+
+
+      const username =
+        document.getElementById(
+          "login-username"
+        ).value
+        .trim();
+
+
+      const password =
+        document.getElementById(
+          "login-password"
+        ).value;
+
+
+      try {
+
+        /*
+         * OAuth2PasswordRequestForm
+         * requires form-urlencoded
+         * data.
+         */
+
+        const formData =
+          new URLSearchParams();
+
+
+        formData.append(
+          "username",
+          username
+        );
+
+
+        formData.append(
+          "password",
+          password
+        );
+
+
+        const response =
+          await fetch(
+            "/auth/login",
+            {
+              method: "POST",
+
+              headers: {
+                "Content-Type":
+                  "application/x-www-form-urlencoded"
+              },
+
+              body: formData
+            }
+          );
+
+
+        if (
+          !response.ok
+        ) {
+
+          const error =
+            await getErrorMessage(
+              response
+            );
+
+          throw new Error(
+            error
+          );
+        }
+
+
+        const data =
+          await response.json();
+
+
+        saveToken(
+          data.access_token
+        );
+
+
+        await initializeApp();
+
+
+        showMessage(
+          document.getElementById(
+            "app-message"
+          ),
+          "Login successful.",
+          "success"
+        );
+
+
+      } catch (error) {
+
+        showMessage(
+          message,
+          error.message,
+          "error"
+        );
+      }
+    }
+  );
+
+
+  /*
+   * ======================================
+   * LOAD CURRENT USER
+   * ======================================
+   */
+
+  async function loadCurrentUser() {
+
+    const response =
+      await api(
+        "/auth/me"
+      );
+
+
+    if (
+      !response.ok
+    ) {
+
+      throw new Error(
+        await getErrorMessage(
+          response
+        )
+      );
+    }
+
+
+    const user =
+      await response.json();
+
+
+    document.getElementById(
+      "current-username"
+    ).textContent =
+      user.username;
+  }
+
+
+  /*
+   * ======================================
+   * LOAD SUMMARY
+   * ======================================
+   */
+
+  async function loadSummary() {
+
+    const response =
+      await api(
+        "/summary"
+      );
+
+
+    if (
+      !response.ok
+    ) {
+
+      throw new Error(
+        await getErrorMessage(
+          response
+        )
+      );
+    }
+
+
+    const data =
+      await response.json();
+
+
+    /*
+     * Total
+     */
+
+    document.getElementById(
+      "total-spend"
+    ).textContent =
+      Number(
+        data.total_spend
+      ).toFixed(2);
+
+
+    /*
+     * Month-over-month
+     */
+
+    const changeElement =
+      document.getElementById(
+        "monthly-change"
+      );
+
+
+    if (
+      data.month_over_month_change_percent
+      === null
+    ) {
+
+      changeElement.textContent =
+        "N/A";
+
+    } else {
+
+      changeElement.textContent =
+        `${Number(
+          data.month_over_month_change_percent
+        ).toFixed(2)}%`;
+    }
+
+
+    /*
+     * Categories
+     */
+
+    const categoryList =
+      document.getElementById(
+        "category-list"
+      );
+
+
+    categoryList.innerHTML = "";
+
+
+    if (
+      data.spend_by_category.length
+      === 0
+    ) {
+
+      categoryList.innerHTML =
+        "<p>No spending this month.</p>";
+
+      return;
+    }
+
+
+    data.spend_by_category
+      .forEach(
+        item => {
+
+          const row =
+            document.createElement(
+              "div"
+            );
+
+
+          row.className =
+            "category-item";
+
+
+          const category =
+            document.createElement(
+              "span"
+            );
+
+
+          category.textContent =
+            item.category;
+
+
+          const amount =
+            document.createElement(
+              "strong"
+            );
+
+
+          amount.textContent =
+            Number(
+              item.total
+            ).toFixed(2);
+
+
+          row.appendChild(
+            category
+          );
+
+
+          row.appendChild(
+            amount
+          );
+
+
+          categoryList.appendChild(
+            row
+          );
+        }
+      );
+  }
+
+
+  /*
+   * ======================================
+   * LOAD EXPENSES
+   * ======================================
+   */
+
+  async function loadExpenses() {
+
+    const response =
+      await api(
+        "/expenses"
+      );
+
+
+    if (
+      !response.ok
+    ) {
+
+      throw new Error(
+        await getErrorMessage(
+          response
+        )
+      );
+    }
+
+
+    const expenses =
+      await response.json();
+
+
+    const expenseList =
+      document.getElementById(
+        "expense-list"
+      );
+
+
+    expenseList.innerHTML = "";
+
+
+    if (
+      expenses.length === 0
+    ) {
+
+      expenseList.innerHTML =
+        "<p>No expenses yet.</p>";
+
+      return;
+    }
+
+
+    expenses.forEach(
+      expense => {
+
+        const item =
+          document.createElement(
+            "div"
+          );
+
+
+        item.className =
+          "expense-item";
+
+
+        const left =
+          document.createElement(
+            "div"
+          );
+
+
+        const category =
+          document.createElement(
+            "div"
+          );
+
+
+        category.className =
+          "expense-category";
+
+
+        category.textContent =
+          expense.category;
+
+
+        const note =
+          document.createElement(
+            "div"
+          );
+
+
+        note.className =
+          "expense-note";
+
+
+        note.textContent =
+          expense.note || "";
+
+
+        const date =
+          document.createElement(
+            "div"
+          );
+
+
+        date.className =
+          "expense-date";
+
+
+        date.textContent =
+          expense.date;
+
+
+        left.appendChild(
+          category
+        );
+
+
+        if (
+          expense.note
+        ) {
+
+          left.appendChild(
+            note
+          );
+        }
+
+
+        left.appendChild(
+          date
+        );
+
+
+        const amount =
+          document.createElement(
+            "div"
+          );
+
+
+        amount.className =
+          "expense-amount";
+
+
+        amount.textContent =
+          Number(
+            expense.amount
+          ).toFixed(2);
+
+
+        item.appendChild(
+          left
+        );
+
+
+        item.appendChild(
+          amount
+        );
+
+
+        expenseList.appendChild(
+          item
+        );
+      }
+    );
+  }
+
+
+  /*
+   * ======================================
+   * ADD EXPENSE
+   * ======================================
+   */
+
+  document
+    .getElementById(
+      "expense-form"
+    )
+    .addEventListener(
+      "submit",
+      async (event) => {
+
+        event.preventDefault();
+
+
+        const form =
+          event.target;
+
+
+        form.classList.add(
+          "loading"
+        );
+
+
+        try {
+
+          const payload = {
+
+            amount:
+              document.getElementById(
+                "amount"
+              ).value,
+
+            category:
+              document.getElementById(
+                "category"
+              ).value
+              .trim(),
+
+            note:
+              document.getElementById(
+                "note"
+              ).value
+              .trim() || null,
+
+            date:
+              document.getElementById(
+                "expense-date"
+              ).value
+          };
+
+
+          const response =
+            await api(
+              "/expenses",
+              {
+                method: "POST",
+
+                headers: {
+                  "Content-Type":
+                    "application/json"
+                },
+
+                body:
+                  JSON.stringify(
+                    payload
+                  )
+              }
+            );
+
+
+          if (
+            !response.ok
+          ) {
+
+            throw new Error(
+              await getErrorMessage(
+                response
+              )
+            );
+          }
+
+
+          form.reset();
+
+
+          setToday();
+
+
+          await loadSummary();
+
+          await loadExpenses();
+
+
+          showMessage(
+            document.getElementById(
+              "app-message"
+            ),
+            "Expense added successfully.",
+            "success"
+          );
+
+
+        } catch (error) {
+
+          showMessage(
+            document.getElementById(
+              "app-message"
+            ),
+            error.message,
+            "error"
+          );
+
+        } finally {
+
+          form.classList.remove(
+            "loading"
+          );
+        }
+      }
+    );
+
+
+  /*
+   * ======================================
+   * LOGOUT
+   * ======================================
+   */
+
+  document
+    .getElementById(
+      "logout-button"
+    )
+    .addEventListener(
+      "click",
+      () => {
+
+        removeToken();
+
+        showLoginScreen();
+
+
+        /*
+         * Reset login form.
+         */
+
+        loginForm.reset();
+
+
+        showMessage(
+          document.getElementById(
+            "auth-message"
+          ),
+          "You have been logged out.",
+          "success"
+        );
+      }
+    );
+
+
+  /*
+   * ======================================
+   * SET TODAY
+   * ======================================
+   */
+
+  function setToday() {
+
+    const today =
+      new Date()
+        .toISOString()
+        .split("T")[0];
+
+
+    document.getElementById(
+      "expense-date"
+    ).value =
+      today;
+  }
+
+
+  /*
+   * ======================================
+   * INITIALIZE APP
+   * ======================================
+   */
+
+  async function initializeApp() {
+
+    try {
+
+      await loadCurrentUser();
+
+      await loadSummary();
+
+      await loadExpenses();
+
+
+      setToday();
+
+
+      showAppScreen();
+
+    } catch (error) {
+
+      removeToken();
+
+      showLoginScreen();
+
+
+      throw error;
+    }
+  }
+
+
+  /*
+   * ======================================
+   * APPLICATION STARTUP
+   * ======================================
+   */
+
+  async function startApplication() {
+
+    setToday();
+
+
+    const token =
+      getToken();
+
+
+    if (!token) {
+
+      showLoginScreen();
+
+      return;
+    }
+
+
+    try {
+
+      await initializeApp();
+
+    } catch (error) {
+
+      console.error(
+        error
+      );
+
+      showMessage(
+        document.getElementById(
+          "auth-message"
+        ),
+        "Please login again.",
+        "error"
+      );
+    }
+  }
+
+
+  startApplication();
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Spend Tracker</title>
+
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+
+    form {
+      display: grid;
+      gap: 10px;
+      max-width: 400px;
+      margin-bottom: 30px;
+    }
+
+    input,
+    button {
+      padding: 10px;
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .summary {
+      padding: 20px;
+      background: #f4f4f4;
+      border-radius: 8px;
+    }
+
+    #insights {
+      padding-left: 20px;
+    }
+
+    #insights li {
+      color: #b45309;
+      margin-bottom: 8px;
+    }
+
+    .error {
+      color: #b00020;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Spend Tracker</h1>
+
+  <h2>Add expense</h2>
+
+  <form id="expense-form">
+    <input
+      id="amount"
+      type="number"
+      step="0.01"
+      min="0.01"
+      placeholder="Amount"
+      required
+    >
+
+    <input
+      id="category"
+      type="text"
+      placeholder="Category"
+      maxlength="100"
+      required
+    >
+
+    <input
+      id="note"
+      type="text"
+      placeholder="Note (optional)"
+      maxlength="500"
+    >
+
+    <input
+      id="date"
+      type="date"
+      required
+    >
+
+    <button type="submit">Add expense</button>
+  </form>
+
+  <p id="message"></p>
+
+  <h2>Current month summary</h2>
+
+  <div class="summary">
+
+    <p>
+      Total spend:
+      <strong id="total">0.00</strong>
+    </p>
+
+    <p>
+      Month-over-month:
+      <strong id="change">N/A</strong>
+    </p>
+
+    <h3>By category</h3>
+    <ul id="categories"></ul>
+
+    <h3>Insights</h3>
+    <ul id="insights"></ul>
+
+  </div>
+
+  <script>
+    const form = document.getElementById("expense-form");
+    const message = document.getElementById("message");
+
+    function setToday() {
+      document.getElementById("date").value =
+        new Date().toISOString().slice(0, 10);
+    }
+
+    setToday();
+
+    async function loadSummary() {
+      const response = await fetch("/summary");
+
+      if (!response.ok) {
+        throw new Error("Could not load summary");
+      }
+
+      const data = await response.json();
+
+      // -----------------------------
+      // Total spend
+      // -----------------------------
+
+      document.getElementById("total").textContent =
+        Number(data.total_spend).toFixed(2);
+
+      // -----------------------------
+      // Month-over-month change
+      // -----------------------------
+
+      document.getElementById("change").textContent =
+        data.month_over_month_change_percent === null
+          ? "N/A"
+          : `${Number(
+              data.month_over_month_change_percent
+            ).toFixed(2)}%`;
+
+      // -----------------------------
+      // Spend by category
+      // -----------------------------
+
+      const categoriesList =
+        document.getElementById("categories");
+
+      categoriesList.innerHTML = "";
+
+      for (const item of data.spend_by_category) {
+        const li = document.createElement("li");
+
+        li.textContent =
+          `${item.category}: ${Number(item.total).toFixed(2)}`;
+
+        categoriesList.appendChild(li);
+      }
+
+      // -----------------------------
+      // Spending insights
+      // -----------------------------
+
+      const insightsList =
+        document.getElementById("insights");
+
+      insightsList.innerHTML = "";
+
+      if (data.insights.length === 0) {
+        const li = document.createElement("li");
+
+        li.textContent =
+          "No categories increased by more than 20%.";
+
+        li.style.color = "green";
+
+        insightsList.appendChild(li);
+      } else {
+        for (const insight of data.insights) {
+          const li = document.createElement("li");
+
+          li.textContent =
+            `⚠️ ${insight.message}`;
+
+          insightsList.appendChild(li);
+        }
+      }
+    }
+
+    // -----------------------------
+    // Add expense
+    // -----------------------------
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      message.textContent = "";
+      message.className = "";
+
+      const payload = {
+        amount: document.getElementById("amount").value,
+        category: document.getElementById("category").value,
+        note: document.getElementById("note").value || null,
+        date: document.getElementById("date").value
+      };
+
+      try {
+        const response = await fetch("/expenses", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          const detail = Array.isArray(data.detail)
+            ? data.detail.map(x => x.msg).join(", ")
+            : data.detail;
+
+          throw new Error(
+            detail || "Failed to add expense"
+          );
+        }
+
+        message.textContent = "Expense added.";
+
+        form.reset();
+        setToday();
+
+        // Refresh summary after adding expense
+        await loadSummary();
+
+      } catch (error) {
+        message.textContent = error.message;
+        message.className = "error";
+      }
+    });
+
+    // -----------------------------
+    // Initial summary load
+    // -----------------------------
+
+    loadSummary().catch(error => {
+      message.textContent = error.message;
+      message.className = "error";
+    });
+  </script>
+</body>
+</html>
